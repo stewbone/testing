@@ -2,18 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import mnist
 
-np.random.seed(10)
-## load the dataset
-data_train, label_train, data_test, data_test = mnist.load()
-
-data = [i for i in range(10)]
 
 class NN:
 	def __init__(self, *args):
-		self.n = 5 #number of nodes in hidden layer
-		self.l = 10 #length of data vector
+		self.n = 16 #number of nodes in hidden layer
+		self.l = 784 #length of data vector
 		self.f = 10 #length of output layer
-		self.reps = 3 #number of repetitions of NN
 		self.init_high = 0.5
 		self.init_low = -0.5 #inital range of starting weights (look into changing)
 		self.hl = 1 #number of hidden layers	
@@ -37,20 +31,27 @@ class NN:
 	def act(self, z): #activation function
 		return 1/(1 + np.exp(-z)) #sigmoid
 	
-	def forwardProp(self, data):
-		history = []
+	def cost(self, data, label):
+		return sum([pow(data[i], 2) for i in range(len(data))]) - 2*data[label] + 1
+	
+	def forwardProp(self, data, label):
 		for i in range(len(self.weights)):
 			data = list(map(self.act, self.weights[i] @ data + self.bias[i]))
-			history.append(data)
-		return history
+		return self.cost(data, label)
 	
 	def printLayerSize(self):
 		for layer in self.weights:
 			print(layer.shape)
 			
 if __name__ == "__main__":
-	data = [1 for i in range(10)]
+	np.random.seed(10)
+
+	## load the dataset
+	data_train, label_train, data_test, data_test = mnist.load()
+
 	nn = NN()
+	print(nn.forwardProp([num / 255 for num in data_train[0]], label_train[0]))
+
 #	print("Data: ")
 #	print(data)
 #	print("Weights of Input to Hidden Layer: ")
