@@ -31,13 +31,24 @@ class NN:
 	def act(self, z): #activation function
 		return 1/(1 + np.exp(-z)) #sigmoid
 	
-	def cost(self, data, label):
+	def cost(self, data, label): #cost function sum of square differences
 		return sum([pow(data[i], 2) for i in range(len(data))]) - 2*data[label] + 1
 	
-	def forwardProp(self, data, label):
+	def forwardProp(self, data):
+		activations = [data]
 		for i in range(len(self.weights)):
 			data = list(map(self.act, self.weights[i] @ data + self.bias[i]))
-		return self.cost(data, label)
+			activations.append(data)
+		return activations #returns list of activations
+
+	def backwardProp(self, activations, label):
+		diff = activations[-1] - label	
+		return diff
+	
+	def vectorizeLabel(self, label):
+		n = np.zeros(self.f)
+		n[label] = 1.0
+		return n
 	
 	def printLayerSize(self):
 		for layer in self.weights:
@@ -50,17 +61,4 @@ if __name__ == "__main__":
 	data_train, label_train, data_test, data_test = mnist.load()
 
 	nn = NN()
-	print(nn.forwardProp([num / 255 for num in data_train[0]], label_train[0]))
-
-#	print("Data: ")
-#	print(data)
-#	print("Weights of Input to Hidden Layer: ")
-#	print(nn.weights[0])
-#	print("Weights of Hidden to Output Layer: ")
-#	print(nn.weights[1])
-#	print("Hidden Layer: ")
-#	hidden = nn.weights[0] @ data
-#	print(hidden)
-#	print("Output Layer: ")
-#	output = nn.weights[1] @ hidden
-#	print(output)
+	print(nn.backwardProp(nn.forwardProp([num / 255 for num in data_train[0]]), nn.vectorizeLabel(label_train[0])))
