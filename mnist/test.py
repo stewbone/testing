@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.neural_network import MLPClassifier
 import matplotlib.pyplot as plt
 import mnist
 
@@ -8,10 +9,10 @@ class NN:
 		self.l = 784 #length of data vector
 		self.n = 20 #number of nodes in hidden layer
 		self.f = 10 #length of output layer
+		self.hl = 3 #number of hidden layers	
 		self.init_high = 0.5
 		self.init_low = -0.5 #inital range of starting weights (look into changing)
-		self.hl = 3 #number of hidden layers	
-		self.learn = 0.01 #learning rate
+		self.learn = 0.02 #learning rate
 		
 		if len(args) > 0:
 			self.hl = args[0]
@@ -74,6 +75,7 @@ class NN:
 			activations[-i - 1].shape += (1,)
 			lambdaWeights = [delta @ np.transpose(activations[-i - 1])] + lambdaWeights
 			lambdaBias = [delta] + lambdaBias
+
 		return lambdaWeights, lambdaBias
 
 	def run_epoch(self, inp, label):
@@ -90,6 +92,8 @@ class NN:
 		assert len(data) == len(labels)
 		for i in range(len(data)):
 			self.run_epoch(data[i], self.vectorizeLabel(labels[i]))
+		for layer in self.weights:
+			print(layer.shape)
 	
 	def test(self, data, labels):
 		assert len(data) == len(labels)
@@ -120,5 +124,15 @@ if __name__ == "__main__":
 	nn = NN()
 #	nn.forwardProp([0.1,0.5,1])	
 #	nn.backwardProp(nn.forwardProp([num / 255 for num in data_train[0]]), nn.vectorizeLabel(label_train[0]))
-	nn.run(data_train, label_train)
-	print("%f%%" % nn.test(data_test, label_test))
+#	nn.run([data_train[0]], [label_train[0]])
+#	nn.run(data_train, label_train)
+
+#	print("%f%%" % nn.test(data_test, label_test))
+
+#	data = [[0.1,0.2,0.3,0.4,0.5]]
+#	label = [[0,1]]	
+#	nn.run(data, label)
+
+#	clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(20,20,20), random_state=1)
+#	clf.fit(data_train, label_train)
+#	print(clf.score(data_test, label_test))
