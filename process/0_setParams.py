@@ -293,6 +293,5 @@ if __name__ == "__main__":
 
 	reduced_cube = convert()[:,:,(RED_BAND, GREEN_BAND, BLUE_BAND)]
 	reduced_cube = np.array([[[RGB(val) for val in bands] for bands in row] for row in reduced_cube]).astype(np.uint8)
-#	reduced_cube = np.load("reduced_cube.npy")
 	app = GUI(root)	
 	root.mainloop()

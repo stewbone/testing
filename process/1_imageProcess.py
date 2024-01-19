@@ -10,6 +10,7 @@ import threading
 import copy
 import importlib
 import math
+import pickle
 
 par = importlib.import_module("0_setParams")
 
@@ -81,18 +82,21 @@ def step3_build(cube, params):
 	HSimage = copy.deepcopy(drawn_HSimage)
 	drawn_HSimage = cv2.drawContours(drawn_HSimage, contours_hyper, -1, (0,0,255))
 	drawn_Nimage = cv2.drawContours(image, contours_normal, -1, (0,0,255))
-   
+
 	return (contours_hyper, drawn_HSimage, drawn_Nimage, HSimage)
 
 def main():
 	params = par.Params(DATA_CUBE_NAME)
-	params.print()
 	full_cube = step1_convert()
 	cropped_cube = step2_apply(full_cube, params)	
-	np.save(DATA_CUBE_NAME + "/" + DATA_CUBE_NAME + "_cropped.npy", cropped_cube)
+
+	with open(DATA_CUBE_NAME + "/" + DATA_CUBE_NAME + "_cropped.pkl", "wb") as f:
+		pickle.dump(cropped_cube, f)
 
 	contours_hyper, drawn_HSimage, drawn_Nimage, HSimage = step3_build(cropped_cube, params)
-	np.save(DATA_CUBE_NAME + "/hyper_contours", contours_hyper)
+	with open(DATA_CUBE_NAME + "/hyper_contours.pkl", "wb") as f:
+		pickle.dump(contours_hyper, f)
+
 	cv2.imwrite(DATA_CUBE_NAME + "/drawn_HSimage.jpg", drawn_HSimage)
 	cv2.imwrite(DATA_CUBE_NAME + "/HSimage.jpg", HSimage)
 	cv2.imwrite(DATA_CUBE_NAME + "/drawn_Nimage.jpg", drawn_Nimage)
