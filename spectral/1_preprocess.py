@@ -18,6 +18,9 @@ path = Path("dataset_raw.pkl")
 if (path.is_file()):
 	df = pd.read_pickle("dataset_raw.pkl")	
 else:
+	#open CAMII metadata
+	metadata = pd.read_csv("completeCollated.csv")
+
 	dataset = []
 	removed = len(colonies)
 	for colony in colonies:
@@ -42,11 +45,18 @@ else:
 	
 		##SAVE DATA
 			if np.average(variance) < varianceThreshold:
-				for pixel in data:
-					dataset.append([colony] + pixel)
-				removed -= 1
-	print("Removed %d out of %d colonies due to outlier removal" % (removed, len(colonies)))
-	df = pd.DataFrame(dataset, columns=["colonyID", "x", "y"] + WAVELENGTHS)
+				plate = colony.split("_")[0]
+				colonyNum = colony.split("_")[1][:-4]
+				mdata = metadata.loc[(metadata['sourcePlate'] == plate) & (metadata["pickIndexOnImage"] == int(colonyNum))]
+				if not mdata.empty:
+					genus = mdata.iloc[0]["Genus"]
+					otu = mdata.iloc[0]["Otu #"]
+
+					for pixel in data:
+						dataset.append([colony, genus, otu] + pixel)
+					removed -= 1
+	print("Removed %d out of %d colonies due to outlier removal or missing metadata" % (removed, len(colonies)))
+	df = pd.DataFrame(dataset, columns=["colonyID","Genus", "Otu", "x", "y"] + WAVELENGTHS)
 	df.to_pickle("dataset_raw.pkl")
 
 ## STANDARDIZATION
@@ -56,5 +66,5 @@ x = StandardScaler().fit_transform(x)
 ## DIMENSIONALITY REDUCTION
 pca = PCA(n_components=9) #9 components looks to be good enough
 principalComponents = pca.fit_transform(x)
-df = df.loc[:, ["colonyID", "x", "y"]].join(pd.DataFrame(x, columns=WAVELENGTHS))
+df = df.loc[:, ["colonyID", "Genus", "Otu", "x", "y"]].join(pd.DataFrame(principalComponents))
 df.to_pickle("dataset.pkl")
